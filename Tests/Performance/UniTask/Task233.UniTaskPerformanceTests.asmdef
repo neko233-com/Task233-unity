@@ -1,0 +1,22 @@
+{
+  "name": "Task233.UniTaskPerformanceTests",
+  "rootNamespace": "Task233.Tests",
+  "references": [
+    "Task233.Runtime",
+    "Unity.PerformanceTesting",
+    "UniTask"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "TASK233_HAS_UNITASK"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

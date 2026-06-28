@@ -103,7 +103,7 @@
   <main>
     <header>
       <h1>Task233 Unity</h1>
-      <p>Unity 2022+ async scheduling primitives built for low overhead PlayerLoop continuations and measurable performance work.</p>
+      <p>Unity 2022+ async scheduling primitives built for warmed zero-GC PlayerLoop continuations, explicit time-unit delays, lightweight cancellation, and measurable performance work.</p>
     </header>
 
     <section>
@@ -116,7 +116,7 @@
       <div class="grid">
         <article class="card">
           <h3>Low overhead</h3>
-          <p>Struct awaitables and pooled scheduler nodes avoid coroutine allocations for common frame waits.</p>
+          <p>Struct awaitables and pooled scheduler nodes avoid coroutine allocations for common frame and time waits after prewarm.</p>
         </article>
         <article class="card">
           <h3>Unity native</h3>
@@ -124,7 +124,7 @@
         </article>
         <article class="card">
           <h3>Benchmarkable</h3>
-          <p>Performance tests are included and can be extended to compare UniTask and ETTask in the same project.</p>
+          <p>Performance tests are included, with an optional UniTask comparison assembly for direct speed and GC checks.</p>
         </article>
       </div>
     </section>
@@ -139,9 +139,25 @@ public sealed class Example : MonoBehaviour
     private async void Start()
     {
         await T233.Yield();
-        await T233.DelayFrame(3);
+        await T233.DelayFrames(3);
+        await T233.DelaySeconds(0.25d);
+        await T233.DelayMilliseconds(16);
         Debug.Log("continued on Unity main thread");
     }
+}</code></pre>
+    </section>
+
+    <section>
+      <h2>Cancellation</h2>
+      <pre><code>var cancel = T233.CreateCancelSource();
+
+try
+{
+    await T233.DelaySeconds(3, cancellation: cancel);
+}
+finally
+{
+    cancel.Dispose();
 }</code></pre>
     </section>
 

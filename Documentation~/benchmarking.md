@@ -18,13 +18,13 @@ Unity.exe -batchmode -projectPath TestProject -runTests -testPlatform EditMode -
 - `UNITY_EMAIL`
 - `UNITY_PASSWORD`
 
-## UniTask and ETTask comparison
+## UniTask comparison
 
-The first benchmark layer measures Task233 primitives directly. To compare against UniTask and ETTask:
+The first benchmark layer measures Task233 primitives directly. To compare against UniTask:
 
-1. Add the target package to `TestProject/Packages/manifest.json`.
-2. Add comparison tests under `Tests/Performance`.
-3. Gate the tests with symbols such as `TASK233_HAS_UNITASK` and `TASK233_HAS_ETTASK`.
+1. Add UniTask to `TestProject/Packages/manifest.json`.
+2. Add `TASK233_HAS_UNITASK` to the Unity scripting define symbols.
+3. Run the optional `Task233.UniTaskPerformanceTests` assembly.
 
 Keep each benchmark measuring the same operation:
 
@@ -34,3 +34,16 @@ Keep each benchmark measuring the same operation:
 - run a large continuation batch
 
 Report GC allocations and median execution time together. Fast code that allocates on hot paths is still a regression for Unity gameplay loops.
+
+## Zero-GC target
+
+Use `T233.Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming, cancelSourceCapacity)` before hot gameplay begins. The warmed path is designed to avoid scheduler allocations for:
+
+- `T233.Post` with cached or static delegates
+- `T233.Yield`
+- `T233.DelayFrames`
+- `T233.DelaySeconds`
+- `T233.DelayMilliseconds`
+- `Task233CancelSource` create/cancel/dispose reuse
+
+Async methods can still allocate because of C# state-machine behavior and captured delegates. For the tightest loops, prefer `T233.Post(staticAction)` or cache continuations explicitly.

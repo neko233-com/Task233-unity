@@ -12,6 +12,7 @@ namespace Task233
         public static void Reset()
         {
             initialized = false;
+            Task233Cancellation.Reset();
             for (var i = 0; i < Queues.Length; i++)
             {
                 Queues[i].Clear();
@@ -42,9 +43,33 @@ namespace Task233
             Queues[(int)timing].Enqueue(continuation);
         }
 
-        public static void EnqueueDelayFrame(PlayerLoopTiming timing, int frameCount, Action continuation)
+        public static void Enqueue(PlayerLoopTiming timing, Action continuation, Task233CancelSource cancellation)
         {
-            Queues[(int)timing].EnqueueDelayFrame(frameCount, continuation);
+            Queues[(int)timing].Enqueue(continuation, cancellation);
+        }
+
+        public static void Enqueue(PlayerLoopTiming timing, Action continuation, Task233CancelSource cancellation, bool skipIfCanceled)
+        {
+            Queues[(int)timing].Enqueue(continuation, cancellation, skipIfCanceled);
+        }
+
+        public static void EnqueueDelayFrame(PlayerLoopTiming timing, int frameCount, Action continuation, Task233CancelSource cancellation)
+        {
+            Queues[(int)timing].EnqueueDelayFrame(frameCount, continuation, cancellation);
+        }
+
+        public static void EnqueueDelaySeconds(PlayerLoopTiming timing, double seconds, bool ignoreTimeScale, Action continuation, Task233CancelSource cancellation)
+        {
+            Queues[(int)timing].EnqueueDelaySeconds(seconds, ignoreTimeScale, continuation, cancellation);
+        }
+
+        public static void Prewarm(int continuationCapacityPerTiming, int delayNodeCapacityPerTiming)
+        {
+            Initialize();
+            for (var i = 0; i < Queues.Length; i++)
+            {
+                Queues[i].Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming);
+            }
         }
 
         private static ContinuationQueue[] CreateQueues()
