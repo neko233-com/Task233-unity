@@ -52,6 +52,32 @@ namespace Task233
                 return;
             }
 
+            if (!Task233Cancellation.Retain(cancellation))
+            {
+                cancellation = default;
+            }
+
+            var nextTail = (tail + 1) & (continuations.Length - 1);
+            if (nextTail == head)
+            {
+                Grow();
+                nextTail = (tail + 1) & (continuations.Length - 1);
+            }
+
+            continuations[tail] = continuation;
+            continuationCancellations[tail] = cancellation;
+            skipWhenCanceled[tail] = skipIfCanceled;
+            tail = nextTail;
+        }
+
+        private void EnqueueRetained(Action continuation, Task233CancelSource cancellation, bool skipIfCanceled = false)
+        {
+            if (continuation == null)
+            {
+                Task233Cancellation.Release(cancellation);
+                return;
+            }
+
             var nextTail = (tail + 1) & (continuations.Length - 1);
             if (nextTail == head)
             {
@@ -77,7 +103,7 @@ namespace Task233
             node.Kind = DelayKind.Frames;
             node.RemainingFrames = frames;
             node.Continuation = continuation;
-            node.Cancellation = cancellation;
+            node.Cancellation = Task233Cancellation.Retain(cancellation) ? cancellation : default;
             node.Next = delayedHead;
             delayedHead = node;
         }
@@ -96,7 +122,7 @@ namespace Task233
             node.TargetTime = now + seconds;
             node.IgnoreTimeScale = ignoreTimeScale;
             node.Continuation = continuation;
-            node.Cancellation = cancellation;
+            node.Cancellation = Task233Cancellation.Retain(cancellation) ? cancellation : default;
             node.Next = delayedHead;
             delayedHead = node;
         }
@@ -111,15 +137,29 @@ namespace Task233
                 var continuation = Dequeue(out var cancellation, out var skipIfCanceled);
                 if (skipIfCanceled && cancellation.IsCancellationRequested)
                 {
+                    Task233Cancellation.Release(cancellation);
                     continue;
                 }
 
                 continuation?.Invoke();
+                Task233Cancellation.Release(cancellation);
             }
         }
 
         public void Clear()
         {
+            for (var i = 0; i < continuations.Length; i++)
+            {
+                Task233Cancellation.Release(continuationCancellations[i]);
+            }
+
+            var current = delayedHead;
+            while (current != null)
+            {
+                Task233Cancellation.Release(current.Cancellation);
+                current = current.Next;
+            }
+
             Array.Clear(continuations, 0, continuations.Length);
             Array.Clear(continuationCancellations, 0, continuationCancellations.Length);
             Array.Clear(skipWhenCanceled, 0, skipWhenCanceled.Length);
@@ -201,7 +241,7 @@ namespace Task233
                     previous.Next = current;
                 }
 
-                Enqueue(completed.Continuation, completed.Cancellation);
+                EnqueueRetained(completed.Continuation, completed.Cancellation);
                 Return(completed);
             }
         }

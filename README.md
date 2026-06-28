@@ -140,7 +140,7 @@ Call `T233.Prewarm()` during startup to reserve continuation queue, delay-node, 
 
 Last README report update: 2026-06-28.
 
-The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short and stable: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 18 tests in 22.13 seconds.
+The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short and stable: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 28 tests in 23.86 seconds, including async/await business-flow coverage.
 
 Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
 
@@ -148,11 +148,13 @@ The measured Unity 2022.3.51f1 comparison table lives in [`性能报告.md`](性
 
 | Case | Task233 ns/op | Comparison ns/op | Result |
 | --- | ---: | ---: | --- |
-| `T233.Yield()` factory vs `UniTask.Yield()` | 1.388 | 1.429 | Task233 1.03x faster |
-| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 6.939 | 224.720 | Task233 32.4x faster |
-| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 6.361 | 280.502 | Task233 44.1x faster |
-| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 6.427 | 304.094 | Task233 47.3x faster |
-| `Task233CancelSource` vs `CancellationTokenSource` | 20.064 | 167.943 | Task233 8.4x faster |
+| `T233.Yield()` factory vs `UniTask.Yield()` | 1.189 | 1.228 | Task233 1.03x faster |
+| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 6.380 | 221.354 | Task233 34.7x faster |
+| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 6.289 | 292.718 | Task233 46.5x faster |
+| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 6.283 | 356.741 | Task233 56.8x faster |
+| `Task233CancelSource` vs `CancellationTokenSource` | 17.293 | 157.246 | Task233 9.1x faster |
+
+Async/await runtime tests cover frame waits, explicit seconds/milliseconds APIs, cancellation exceptions, FIFO post order, nested workflows, owner-destroy cancellation, debounce, and timeout cancellation.
 
 Run the Editor preview allocation probe from `Tools > Task233 > Preview` for a quick local warmed-GC check. For authoritative speed results, run Unity Performance Testing in the target Unity version and hardware.
 

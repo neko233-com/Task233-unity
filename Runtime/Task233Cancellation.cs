@@ -6,9 +6,11 @@ namespace Task233
     {
         private const byte Active = 1;
         private const byte Canceled = 2;
+        private const byte Disposed = 4;
 
         private static int[] versions = new int[64];
         private static byte[] states = new byte[64];
+        private static int[] refCounts = new int[64];
         private static int[] free = new int[64];
         private static int freeCount;
         private static int nextId = 1;
@@ -29,6 +31,7 @@ namespace Task233
 
             versions[id]++;
             states[id] = Active;
+            refCounts[id] = 0;
             return new Task233CancelSource(id, versions[id]);
         }
 
@@ -52,6 +55,7 @@ namespace Task233
             for (var i = 0; i < states.Length; i++)
             {
                 states[i] = 0;
+                refCounts[i] = 0;
             }
 
             freeCount = 0;
@@ -61,15 +65,15 @@ namespace Task233
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsCancellationRequested(Task233CancelSource source)
         {
-            return IsValid(source) && (states[source.Id] & Canceled) != 0;
+            return HasVersion(source) && (states[source.Id] & Canceled) != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Cancel(Task233CancelSource source)
         {
-            if (IsValid(source))
+            if (HasVersion(source) && (states[source.Id] & (Active | Disposed)) != 0)
             {
-                states[source.Id] = Active | Canceled;
+                states[source.Id] |= Canceled;
             }
         }
 
@@ -81,19 +85,62 @@ namespace Task233
                 return;
             }
 
-            states[source.Id] = 0;
-            versions[source.Id]++;
-            EnsureFreeCapacity();
-            free[freeCount++] = source.Id;
+            if (refCounts[source.Id] > 0)
+            {
+                states[source.Id] |= Disposed;
+                return;
+            }
+
+            Free(source.Id);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Retain(Task233CancelSource source)
+        {
+            if (!IsValid(source))
+            {
+                return false;
+            }
+
+            refCounts[source.Id]++;
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Release(Task233CancelSource source)
+        {
+            if (!HasVersion(source))
+            {
+                return;
+            }
+
+            var id = source.Id;
+            if (refCounts[id] <= 0)
+            {
+                return;
+            }
+
+            refCounts[id]--;
+            if (refCounts[id] == 0 && (states[id] & Disposed) != 0)
+            {
+                Free(id);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsValid(Task233CancelSource source)
         {
+            return HasVersion(source) &&
+                   (states[source.Id] & Active) != 0 &&
+                   (states[source.Id] & Disposed) == 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool HasVersion(Task233CancelSource source)
+        {
             return source.Id > 0 &&
                    source.Id < states.Length &&
-                   versions[source.Id] == source.Version &&
-                   (states[source.Id] & Active) != 0;
+                   versions[source.Id] == source.Version;
         }
 
         private static void EnsureCapacity(int capacity)
@@ -111,6 +158,7 @@ namespace Task233
 
             System.Array.Resize(ref states, next);
             System.Array.Resize(ref versions, next);
+            System.Array.Resize(ref refCounts, next);
         }
 
         private static void EnsureFreeCapacity()
@@ -121,6 +169,15 @@ namespace Task233
             }
 
             System.Array.Resize(ref free, free.Length * 2);
+        }
+
+        private static void Free(int id)
+        {
+            states[id] = 0;
+            refCounts[id] = 0;
+            versions[id]++;
+            EnsureFreeCapacity();
+            free[freeCount++] = id;
         }
     }
 }

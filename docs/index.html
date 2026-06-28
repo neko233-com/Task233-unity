@@ -136,25 +136,30 @@
 
     <section>
       <h2>Measured Performance</h2>
-      <p>Unity 2022.3.51f1 EditMode, WindowsEditor, no warmup, one measurement, total time converted to throughput. The latest run took 22.13 seconds and used UniTask 2.5.11 from a downloaded source package, not a git dependency. Full data: <a href="https://github.com/neko233-com/Task233-unity/blob/main/%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A.md">性能报告.md</a>.</p>
+      <p>Unity 2022.3.51f1 EditMode, WindowsEditor, no warmup, one measurement, total time converted to throughput. The latest run took 23.86 seconds across 28 tests and used UniTask 2.5.11 from a downloaded source package, not a git dependency. Full data: <a href="https://github.com/neko233-com/Task233-unity/blob/main/%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A.md">性能报告.md</a>.</p>
       <div class="grid">
         <article class="card">
           <h3>Yield</h3>
-          <p><strong>1.388 ns/op</strong> for <code>T233.Yield()</code>, faster than UniTask in the same 20-second run.</p>
+          <p><strong>1.189 ns/op</strong> for <code>T233.Yield()</code>, faster than UniTask in the same run.</p>
         </article>
         <article class="card">
           <h3>Frame delay</h3>
-          <p><strong>32.4x faster</strong> than <code>UniTask.DelayFrame(1)</code> factory creation.</p>
+          <p><strong>34.7x faster</strong> than <code>UniTask.DelayFrame(1)</code> factory creation.</p>
         </article>
         <article class="card">
           <h3>Time delay</h3>
-          <p><strong>44.1x to 47.3x faster</strong> for seconds and milliseconds delay factory creation.</p>
+          <p><strong>46.5x to 56.8x faster</strong> for seconds and milliseconds delay factory creation.</p>
         </article>
         <article class="card">
           <h3>Cancellation</h3>
-          <p><strong>8.4x faster</strong> than <code>CancellationTokenSource</code> create/cancel/dispose.</p>
+          <p><strong>9.1x faster</strong> than <code>CancellationTokenSource</code> create/cancel/dispose.</p>
         </article>
       </div>
+    </section>
+
+    <section>
+      <h2>Business Coverage</h2>
+      <p>Runtime tests cover async/await frame waits, explicit seconds and milliseconds APIs, cancellation exceptions, FIFO post order, nested workflows, owner cancellation, debounce, and timeout cancellation.</p>
     </section>
 
     <section>

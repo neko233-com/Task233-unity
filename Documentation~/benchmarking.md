@@ -54,6 +54,21 @@ The default short-run benchmark policy is:
 
 Fast code that allocates on hot paths is still a regression for Unity gameplay loops.
 
+## Runtime business coverage
+
+`Tests/Runtime` contains deterministic EditMode tests for async/await behavior and common business flows. These tests use a test-only manual PlayerLoop pump so they do not depend on EditMode frame timing:
+
+- `await T233.Yield()`
+- `DelayFrames`, `DelaySeconds`, and `DelayMilliseconds`
+- cancellation exceptions
+- FIFO `Post`
+- nested async workflows
+- owner cancellation after UI/object lifetime ends
+- debounce, where only the last request applies
+- timeout cancellation for slow work
+
+The cancellation tests intentionally cover `Cancel(); Dispose();` while work is still pending. Task233 retains cancellation handles held by scheduled work and releases them after the continuation observes cancellation.
+
 ## README report
 
 When a numeric benchmark run is available, update the `Performance Test Report` table in `README.md` with:

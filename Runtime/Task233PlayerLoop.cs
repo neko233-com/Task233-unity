@@ -94,6 +94,11 @@ namespace Task233
             Queues[(int)timing].Run();
         }
 
+        internal static void RunForTesting(PlayerLoopTiming timing)
+        {
+            Run(timing);
+        }
+
         private static void InsertRunner<TPlayerLoop>(ref PlayerLoopSystem root, PlayerLoopTiming timing)
         {
             var runnerType = typeof(Task233PlayerLoopRunnerMarker<TPlayerLoop>);
