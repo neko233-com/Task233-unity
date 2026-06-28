@@ -81,6 +81,49 @@ namespace Task233.Tests
         }
 
         [Test]
+        public void MigrationAliasesCompleteSynchronouslyForZeroDelay()
+        {
+            var taskDelayCompleted = false;
+            var waitForSecondsCompleted = false;
+
+            RunTaskDelayAlias();
+            RunWaitForSecondsAlias();
+
+            Assert.IsTrue(taskDelayCompleted);
+            Assert.IsTrue(waitForSecondsCompleted);
+
+            async void RunTaskDelayAlias()
+            {
+                await T233.Delay(TimeSpan.Zero);
+                taskDelayCompleted = true;
+            }
+
+            async void RunWaitForSecondsAlias()
+            {
+                await T233.WaitForSeconds(0);
+                waitForSecondsCompleted = true;
+            }
+        }
+
+        [Test]
+        public void NextFrameMatchesOneFrameDelay()
+        {
+            var completed = false;
+
+            Run();
+
+            Assert.IsFalse(completed);
+            Pump();
+            Assert.IsTrue(completed);
+
+            async void Run()
+            {
+                await T233.NextFrame();
+                completed = true;
+            }
+        }
+
+        [Test]
         public void CancelSourceStopsAwaitedWork()
         {
             var cancel = T233.CreateCancelSource();

@@ -76,6 +76,7 @@ public sealed class Example : MonoBehaviour
 
 ```csharp
 await T233.Yield();
+await T233.NextFrame();
 await T233.DelayFrames(3);
 await T233.DelaySeconds(1.5d);
 await T233.DelayMilliseconds(250);
@@ -84,6 +85,16 @@ T233.Post(static () => Debug.Log("next Update"));
 ```
 
 Time units are explicit in the method names. `DelaySeconds` and `DelayMilliseconds` use scaled Unity time by default. Pass `ignoreTimeScale: true` for unscaled time.
+
+For low-diff UniTask / `Task.Delay` migration, Task233 also provides compatibility aliases:
+
+```csharp
+await T233.Delay(250);
+await T233.Delay(TimeSpan.FromSeconds(1));
+await T233.WaitForSeconds(1);
+```
+
+New code should prefer the explicit-unit names.
 
 ## Editor Preview
 
@@ -140,7 +151,7 @@ Call `T233.Prewarm()` during startup to reserve continuation queue, delay-node, 
 
 Last README report update: 2026-06-28.
 
-The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short and stable: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 28 tests in 23.86 seconds, including async/await business-flow coverage.
+The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short and stable: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 30 tests in 22.96 seconds, including async/await business-flow coverage.
 
 Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
 
@@ -149,13 +160,13 @@ That report now includes a full comparison matrix covering measured hot paths, A
 
 | Case | Task233 ns/op | Comparison ns/op | Result |
 | --- | ---: | ---: | --- |
-| `T233.Yield()` factory vs `UniTask.Yield()` | 1.189 | 1.228 | Task233 1.03x faster |
-| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 6.380 | 221.354 | Task233 34.7x faster |
-| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 6.289 | 292.718 | Task233 46.5x faster |
-| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 6.283 | 356.741 | Task233 56.8x faster |
-| `Task233CancelSource` vs `CancellationTokenSource` | 17.293 | 157.246 | Task233 9.1x faster |
+| `T233.Yield()` factory vs `UniTask.Yield()` | 2.403 | 2.766 | Task233 1.15x faster |
+| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 6.828 | 240.385 | Task233 35.2x faster |
+| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 6.471 | 286.124 | Task233 44.2x faster |
+| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 6.907 | 310.160 | Task233 44.9x faster |
+| `Task233CancelSource` vs `CancellationTokenSource` | 17.689 | 159.556 | Task233 9.0x faster |
 
-Async/await runtime tests cover frame waits, explicit seconds/milliseconds APIs, cancellation exceptions, FIFO post order, nested workflows, owner-destroy cancellation, debounce, and timeout cancellation.
+Async/await runtime tests cover frame waits, explicit seconds/milliseconds APIs, low-diff migration aliases, cancellation exceptions, FIFO post order, nested workflows, owner-destroy cancellation, debounce, and timeout cancellation.
 
 Run the Editor preview allocation probe from `Tools > Task233 > Preview` for a quick local warmed-GC check. For authoritative speed results, run Unity Performance Testing in the target Unity version and hardware.
 
@@ -180,3 +191,9 @@ The optional assembly is gated so normal users do not need UniTask installed.
 ## Docs
 
 Static docs live in `docs/` and are published by GitHub Pages.
+
+Additional package docs:
+
+- [`Documentation~/migration.md`](Documentation~/migration.md) for UniTask / `Task` migration.
+- [`Documentation~/agent-integration.md`](Documentation~/agent-integration.md) for coding agents and automation tools.
+- [`AGENTS.md`](AGENTS.md) for repository-level agent notes.

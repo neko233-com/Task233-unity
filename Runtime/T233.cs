@@ -75,6 +75,12 @@ namespace Task233
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DelayAwaitable NextFrame(PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
+        {
+            return DelayAwaitable.Frames(1, timing, cancellation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DelayAwaitable DelayFrames(int frameCount, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
             if (frameCount < 0)
@@ -94,6 +100,45 @@ namespace Task233
             }
 
             return DelayAwaitable.Seconds(seconds, ignoreTimeScale, timing, cancellation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DelayAwaitable WaitForSeconds(float seconds, bool ignoreTimeScale = false, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
+        {
+            if (!(seconds >= 0f))
+            {
+                throw new ArgumentOutOfRangeException(nameof(seconds));
+            }
+
+            return DelayAwaitable.Seconds(seconds, ignoreTimeScale, timing, cancellation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DelayAwaitable WaitForSeconds(int seconds, bool ignoreTimeScale = false, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
+        {
+            if (seconds < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(seconds));
+            }
+
+            return DelayAwaitable.Seconds(seconds, ignoreTimeScale, timing, cancellation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DelayAwaitable Delay(TimeSpan delay, bool ignoreTimeScale = false, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
+        {
+            if (delay < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(delay));
+            }
+
+            return DelayAwaitable.Seconds(delay.TotalSeconds, ignoreTimeScale, timing, cancellation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DelayAwaitable Delay(int milliseconds, bool ignoreTimeScale = false, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
+        {
+            return DelayMilliseconds(milliseconds, timing, cancellation, ignoreTimeScale);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

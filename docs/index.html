@@ -171,23 +171,23 @@
 
     <section>
       <h2>Measured Performance</h2>
-      <p>Unity 2022.3.51f1 EditMode, WindowsEditor, no warmup, one measurement, total time converted to throughput. The latest run took 23.86 seconds across 28 tests and used UniTask 2.5.11 from a downloaded source package, not a git dependency. Full data: <a href="https://github.com/neko233-com/Task233-unity/blob/main/%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A.md">性能报告.md</a>.</p>
+      <p>Unity 2022.3.51f1 EditMode, WindowsEditor, no warmup, one measurement, total time converted to throughput. The latest run took 22.96 seconds across 30 tests and used UniTask 2.5.11 from a downloaded source package, not a git dependency. Full data: <a href="https://github.com/neko233-com/Task233-unity/blob/main/%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A.md">性能报告.md</a>.</p>
       <div class="grid">
         <article class="card">
           <h3>Yield</h3>
-          <p><strong>1.189 ns/op</strong> for <code>T233.Yield()</code>, faster than UniTask in the same run.</p>
+          <p><strong>2.403 ns/op</strong> for <code>T233.Yield()</code>, faster than UniTask in the same run.</p>
         </article>
         <article class="card">
           <h3>Frame delay</h3>
-          <p><strong>34.7x faster</strong> than <code>UniTask.DelayFrame(1)</code> factory creation.</p>
+          <p><strong>35.2x faster</strong> than <code>UniTask.DelayFrame(1)</code> factory creation.</p>
         </article>
         <article class="card">
           <h3>Time delay</h3>
-          <p><strong>46.5x to 56.8x faster</strong> for seconds and milliseconds delay factory creation.</p>
+          <p><strong>44.2x to 44.9x faster</strong> for seconds and milliseconds delay factory creation.</p>
         </article>
         <article class="card">
           <h3>Cancellation</h3>
-          <p><strong>9.1x faster</strong> than <code>CancellationTokenSource</code> create/cancel/dispose.</p>
+          <p><strong>9.0x faster</strong> than <code>CancellationTokenSource</code> create/cancel/dispose.</p>
         </article>
       </div>
       <div class="table-wrap">
@@ -203,33 +203,33 @@
           <tbody>
             <tr>
               <td><code>Yield()</code> factory</td>
-              <td>1.189 ns/op</td>
-              <td>1.228 ns/op</td>
-              <td>Task233 1.03x faster</td>
+              <td>2.403 ns/op</td>
+              <td>2.766 ns/op</td>
+              <td>Task233 1.15x faster</td>
             </tr>
             <tr>
               <td><code>DelayFrames(1)</code> factory</td>
-              <td>6.380 ns/op</td>
-              <td>221.354 ns/op</td>
-              <td>Task233 34.7x faster</td>
+              <td>6.828 ns/op</td>
+              <td>240.385 ns/op</td>
+              <td>Task233 35.2x faster</td>
             </tr>
             <tr>
               <td><code>DelaySeconds(0.001)</code> factory</td>
-              <td>6.289 ns/op</td>
-              <td>292.718 ns/op</td>
-              <td>Task233 46.5x faster</td>
+              <td>6.471 ns/op</td>
+              <td>286.124 ns/op</td>
+              <td>Task233 44.2x faster</td>
             </tr>
             <tr>
               <td><code>DelayMilliseconds(1)</code> factory</td>
-              <td>6.283 ns/op</td>
-              <td>356.741 ns/op</td>
-              <td>Task233 56.8x faster</td>
+              <td>6.907 ns/op</td>
+              <td>310.160 ns/op</td>
+              <td>Task233 44.9x faster</td>
             </tr>
             <tr>
               <td>cancel source create/cancel/dispose</td>
-              <td>17.293 ns/op</td>
-              <td>157.246 ns/op</td>
-              <td>Task233 9.1x faster than <code>CancellationTokenSource</code></td>
+              <td>17.689 ns/op</td>
+              <td>159.556 ns/op</td>
+              <td>Task233 9.0x faster than <code>CancellationTokenSource</code></td>
             </tr>
           </tbody>
         </table>
@@ -460,7 +460,7 @@ cancel.Dispose(); // safe while the awaited work is still pending</code></pre>
 
     <section>
       <h2>Business Coverage</h2>
-      <p>Runtime tests cover async/await frame waits, explicit seconds and milliseconds APIs, cancellation exceptions, FIFO post order, nested workflows, owner cancellation, debounce, timeout cancellation, and the immediate <code>Cancel(); Dispose();</code> pattern.</p>
+      <p>Runtime tests cover async/await frame waits, explicit seconds and milliseconds APIs, low-diff migration aliases, cancellation exceptions, FIFO post order, nested workflows, owner cancellation, debounce, timeout cancellation, and the immediate <code>Cancel(); Dispose();</code> pattern.</p>
     </section>
 
     <section>
@@ -482,6 +482,60 @@ public sealed class Example : MonoBehaviour
     </section>
 
     <section>
+      <h2>Migration</h2>
+      <p>Task233 keeps common UniTask and <code>Task.Delay</code> shapes as aliases, so hot-path migrations can be low-diff. New code should still prefer explicit-unit APIs.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Before</th>
+              <th>Low-diff Task233</th>
+              <th>Preferred Task233</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>await UniTask.Yield()</code></td>
+              <td><code>await T233.Yield()</code></td>
+              <td><code>await T233.Yield()</code></td>
+            </tr>
+            <tr>
+              <td><code>await UniTask.NextFrame()</code></td>
+              <td><code>await T233.NextFrame()</code></td>
+              <td><code>await T233.DelayFrames(1)</code></td>
+            </tr>
+            <tr>
+              <td><code>await UniTask.DelayFrame(3)</code></td>
+              <td><code>await T233.DelayFrame(3)</code></td>
+              <td><code>await T233.DelayFrames(3)</code></td>
+            </tr>
+            <tr>
+              <td><code>await UniTask.Delay(250)</code></td>
+              <td><code>await T233.Delay(250)</code></td>
+              <td><code>await T233.DelayMilliseconds(250)</code></td>
+            </tr>
+            <tr>
+              <td><code>await Task.Delay(250)</code></td>
+              <td><code>await T233.Delay(250)</code></td>
+              <td><code>await T233.DelayMilliseconds(250)</code></td>
+            </tr>
+            <tr>
+              <td><code>await UniTask.Delay(TimeSpan.FromSeconds(1))</code></td>
+              <td><code>await T233.Delay(TimeSpan.FromSeconds(1))</code></td>
+              <td><code>await T233.DelaySeconds(1)</code></td>
+            </tr>
+            <tr>
+              <td><code>await UniTask.WaitForSeconds(1)</code></td>
+              <td><code>await T233.WaitForSeconds(1)</code></td>
+              <td><code>await T233.DelaySeconds(1)</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Full migration notes live in <a href="https://github.com/neko233-com/Task233-unity/blob/main/Documentation~/migration.md">Documentation~/migration.md</a>.</p>
+    </section>
+
+    <section>
       <h2>Cancellation</h2>
       <pre><code>var cancel = T233.CreateCancelSource();
 
@@ -498,6 +552,43 @@ finally
     <section>
       <h2>Automation</h2>
       <p>GitHub Actions runs Unity tests through GameCI and publishes this HTML documentation through GitHub Pages.</p>
+    </section>
+
+    <section>
+      <h2>Agent Integration</h2>
+      <p>Coding agents should read <a href="https://github.com/neko233-com/Task233-unity/blob/main/AGENTS.md">AGENTS.md</a> and <a href="https://github.com/neko233-com/Task233-unity/blob/main/Documentation~/agent-integration.md">Documentation~/agent-integration.md</a> before editing.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Agent task</th>
+              <th>Required behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Generate examples</td>
+              <td>Prefer <code>DelayFrames</code>, <code>DelaySeconds</code>, and <code>DelayMilliseconds</code>; use aliases only for migrations.</td>
+            </tr>
+            <tr>
+              <td>Edit runtime</td>
+              <td>Keep <code>Runtime/</code> player-safe and free of Editor APIs, worker-thread requirements, unsafe code, and dynamic code generation.</td>
+            </tr>
+            <tr>
+              <td>Change cancellation</td>
+              <td>Preserve safe <code>Cancel(); Dispose();</code> behavior while scheduled work is pending.</td>
+            </tr>
+            <tr>
+              <td>Change benchmarks</td>
+              <td>Update <code>README.md</code>, <code>性能报告.md</code>, and <code>docs/index.html</code> together.</td>
+            </tr>
+            <tr>
+              <td>Run tests</td>
+              <td>Prepare UniTask with <code>Tools/PrepareUniTaskPackage.ps1</code>, then run Unity 2022.3.51f1 EditMode tests.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section>
