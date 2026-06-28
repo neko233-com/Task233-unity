@@ -97,6 +97,41 @@
     .card p {
       margin: 0;
     }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-top: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--fg);
+      background: color-mix(in srgb, var(--bg), var(--fg) 5%);
+      font-size: .9rem;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
   </style>
 </head>
 <body>
@@ -158,8 +193,85 @@
     </section>
 
     <section>
+      <h2>How It Works</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Thin awaitables</h3>
+          <p>Factory APIs return readonly structs. The default <code>T233.Yield()</code> path is a dedicated minimal awaitable with no cancellation or timing fields.</p>
+        </article>
+        <article class="card">
+          <h3>PlayerLoop queues</h3>
+          <p>Each timing owns an array-backed continuation queue. Work is pushed into the queue and drained by a PlayerLoop runner on the Unity main thread.</p>
+        </article>
+        <article class="card">
+          <h3>Pooled delays</h3>
+          <p>Frame and time waits use pooled delay nodes. Ready nodes transfer their retained cancellation handle to the continuation queue.</p>
+        </article>
+        <article class="card">
+          <h3>Single-thread cancel</h3>
+          <p><code>Task233CancelSource</code> is a struct handle backed by compact arrays, not a heap <code>CancellationTokenSource</code>.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why Faster</h2>
+      <p>Task233 wins these benchmarks by narrowing the hot path. UniTask is a broad async toolkit with many integration modes; Task233 is deliberately a small Unity PlayerLoop scheduler for common game waits. Less generality means fewer checks, fewer objects, and fewer layers on the measured paths.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>Task233 design</th>
+              <th>Performance effect</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Yield()</code></td>
+              <td>Dedicated default awaitable, no generic promise object, no timing conversion, no token plumbing.</td>
+              <td>Factory creation stays close to returning <code>default</code>.</td>
+            </tr>
+            <tr>
+              <td>Frame delay</td>
+              <td>Stores an integer frame counter in a pooled node and checks it during the selected PlayerLoop timing.</td>
+              <td>Avoids coroutine allocation and avoids a general-purpose async source for the factory path.</td>
+            </tr>
+            <tr>
+              <td>Seconds / milliseconds</td>
+              <td>APIs expose explicit units and store the target as a double timestamp. Milliseconds use a direct multiply to seconds.</td>
+              <td>Avoids <code>TimeSpan</code> conversion and broad delay overload dispatch on the hot factory path.</td>
+            </tr>
+            <tr>
+              <td>Cancellation</td>
+              <td>Uses integer handles, version checks, state bytes, and retain/release while work is pending.</td>
+              <td>Avoids allocating <code>CancellationTokenSource</code> for each operation while keeping <code>Cancel(); Dispose();</code> safe.</td>
+            </tr>
+            <tr>
+              <td>WebGL / single thread</td>
+              <td>No worker thread dependency, no reflection emit, no unsafe requirement, no dynamic code generation.</td>
+              <td>Same runtime shape works on Unity WebGL-style single-thread platforms.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Async methods can still allocate because C# generates state machines and captured closures. For the tightest paths, use static or cached continuations with <code>T233.Post</code>, prewarm expected capacities, and keep cancellation sources owner-scoped.</p>
+    </section>
+
+    <section>
+      <h2>Cancellation Model</h2>
+      <p>Task233 cancellation is designed for Unity ownership patterns. A UI panel, behaviour, or request owner can call <code>Cancel()</code> and immediately <code>Dispose()</code>. If scheduled work still holds the handle, Task233 retains the slot until that work observes cancellation, then releases it for reuse.</p>
+      <pre><code>var cancel = T233.CreateCancelSource();
+
+SearchAsync(cancel);
+
+cancel.Cancel();
+cancel.Dispose(); // safe while the awaited work is still pending</code></pre>
+    </section>
+
+    <section>
       <h2>Business Coverage</h2>
-      <p>Runtime tests cover async/await frame waits, explicit seconds and milliseconds APIs, cancellation exceptions, FIFO post order, nested workflows, owner cancellation, debounce, and timeout cancellation.</p>
+      <p>Runtime tests cover async/await frame waits, explicit seconds and milliseconds APIs, cancellation exceptions, FIFO post order, nested workflows, owner cancellation, debounce, timeout cancellation, and the immediate <code>Cancel(); Dispose();</code> pattern.</p>
     </section>
 
     <section>
