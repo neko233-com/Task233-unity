@@ -9,8 +9,8 @@ namespace Task233.Tests
 {
     public sealed class Task233VsUniTaskPerformanceTests
     {
-        private const int FactoryIterations = 1000000;
-        private const int CancellationIterations = 100000;
+        private const int FactoryIterations = 20000000;
+        private const int CancellationIterations = 2000000;
 
         [Test, Performance]
         public void Task233YieldFactory()

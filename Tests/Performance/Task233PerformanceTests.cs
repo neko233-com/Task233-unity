@@ -7,8 +7,8 @@ namespace Task233.Tests
     public sealed class Task233PerformanceTests
     {
         private const int PostIterations = 128;
-        private const int FactoryIterations = 1000000;
-        private const int CancellationIterations = 100000;
+        private const int FactoryIterations = 20000000;
+        private const int CancellationIterations = 2000000;
         private static readonly Action NoopAction = Noop;
 
         [Test, Performance]

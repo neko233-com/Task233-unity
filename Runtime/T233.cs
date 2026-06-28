@@ -18,6 +18,7 @@ namespace Task233
             Task233PlayerLoop.Initialize();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task233CancelSource CreateCancelSource()
         {
             return Task233Cancellation.Create();
@@ -44,26 +45,36 @@ namespace Task233
             Task233PlayerLoop.Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming);
         }
 
-        public static YieldAwaitable Yield()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DefaultYieldAwaitable Yield()
         {
             return default;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static YieldAwaitable Yield(PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
             return new YieldAwaitable(timing, cancellation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Post(Action continuation, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
             Task233PlayerLoop.Enqueue(timing, continuation, cancellation, true);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DelayAwaitable DelayFrame(int frameCount, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
-            return DelayFrames(frameCount, timing, cancellation);
+            if (frameCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(frameCount));
+            }
+
+            return DelayAwaitable.Frames(frameCount, timing, cancellation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DelayAwaitable DelayFrames(int frameCount, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
             if (frameCount < 0)
@@ -74,9 +85,10 @@ namespace Task233
             return DelayAwaitable.Frames(frameCount, timing, cancellation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DelayAwaitable DelaySeconds(double seconds, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default, bool ignoreTimeScale = false)
         {
-            if (double.IsNaN(seconds) || seconds < 0d)
+            if (!(seconds >= 0d))
             {
                 throw new ArgumentOutOfRangeException(nameof(seconds));
             }
@@ -84,6 +96,7 @@ namespace Task233
             return DelayAwaitable.Seconds(seconds, ignoreTimeScale, timing, cancellation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DelayAwaitable DelayMilliseconds(int milliseconds, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default, bool ignoreTimeScale = false)
         {
             if (milliseconds < 0)
@@ -91,7 +104,35 @@ namespace Task233
                 throw new ArgumentOutOfRangeException(nameof(milliseconds));
             }
 
-            return DelayAwaitable.Seconds(milliseconds / 1000d, ignoreTimeScale, timing, cancellation);
+            return DelayAwaitable.Seconds(milliseconds * 0.001d, ignoreTimeScale, timing, cancellation);
+        }
+
+        public readonly struct DefaultYieldAwaitable
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Awaiter GetAwaiter()
+            {
+                return default;
+            }
+
+            public readonly struct Awaiter : ICriticalNotifyCompletion
+            {
+                public bool IsCompleted => false;
+
+                public void GetResult()
+                {
+                }
+
+                public void OnCompleted(Action continuation)
+                {
+                    Task233PlayerLoop.Enqueue(PlayerLoopTiming.Update, continuation);
+                }
+
+                public void UnsafeOnCompleted(Action continuation)
+                {
+                    Task233PlayerLoop.Enqueue(PlayerLoopTiming.Update, continuation);
+                }
+            }
         }
 
         public readonly struct YieldAwaitable
@@ -99,12 +140,14 @@ namespace Task233
             private readonly int timingValuePlusOne;
             private readonly Task233CancelSource cancellation;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal YieldAwaitable(PlayerLoopTiming timing, Task233CancelSource cancellation)
             {
                 timingValuePlusOne = (int)timing + 1;
                 this.cancellation = cancellation;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Awaiter GetAwaiter()
             {
                 var timing = timingValuePlusOne == 0 ? PlayerLoopTiming.Update : (PlayerLoopTiming)(timingValuePlusOne - 1);
@@ -116,6 +159,7 @@ namespace Task233
                 private readonly PlayerLoopTiming timing;
                 private readonly Task233CancelSource cancellation;
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 internal Awaiter(PlayerLoopTiming timing, Task233CancelSource cancellation)
                 {
                     this.timing = timing;
@@ -124,6 +168,7 @@ namespace Task233
 
                 public bool IsCompleted => cancellation.IsCancellationRequested;
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void GetResult()
                 {
                     cancellation.ThrowIfCancellationRequested();
@@ -150,6 +195,7 @@ namespace Task233
             private readonly PlayerLoopTiming timing;
             private readonly Task233CancelSource cancellation;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private DelayAwaitable(DelayKind kind, int frames, double seconds, bool ignoreTimeScale, PlayerLoopTiming timing, Task233CancelSource cancellation)
             {
                 this.kind = kind;
@@ -160,16 +206,19 @@ namespace Task233
                 this.cancellation = cancellation;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal static DelayAwaitable Frames(int frames, PlayerLoopTiming timing, Task233CancelSource cancellation)
             {
                 return new DelayAwaitable(DelayKind.Frames, frames, 0d, false, timing, cancellation);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal static DelayAwaitable Seconds(double seconds, bool ignoreTimeScale, PlayerLoopTiming timing, Task233CancelSource cancellation)
             {
                 return new DelayAwaitable(DelayKind.Seconds, 0, seconds, ignoreTimeScale, timing, cancellation);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Awaiter GetAwaiter()
             {
                 return new Awaiter(kind, frames, seconds, ignoreTimeScale, timing, cancellation);
@@ -184,6 +233,7 @@ namespace Task233
                 private readonly PlayerLoopTiming timing;
                 private readonly Task233CancelSource cancellation;
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 internal Awaiter(DelayKind kind, int frames, double seconds, bool ignoreTimeScale, PlayerLoopTiming timing, Task233CancelSource cancellation)
                 {
                     this.kind = kind;
@@ -196,6 +246,7 @@ namespace Task233
 
                 public bool IsCompleted => cancellation.IsCancellationRequested || (kind == DelayKind.Frames ? frames == 0 : seconds <= 0d);
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void GetResult()
                 {
                     cancellation.ThrowIfCancellationRequested();

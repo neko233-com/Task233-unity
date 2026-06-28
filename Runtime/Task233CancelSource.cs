@@ -14,15 +14,25 @@ namespace Task233
             Version = version;
         }
 
-        public bool IsCreated => Id > 0;
+        public bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Id > 0;
+        }
 
-        public bool IsCancellationRequested => Task233Cancellation.IsCancellationRequested(this);
+        public bool IsCancellationRequested
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Task233Cancellation.IsCancellationRequested(this);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Cancel()
         {
             Task233Cancellation.Cancel(this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
             Task233Cancellation.Dispose(this);

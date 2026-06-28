@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Task233
 {
     internal static class Task233Cancellation
@@ -11,6 +13,7 @@ namespace Task233
         private static int freeCount;
         private static int nextId = 1;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task233CancelSource Create()
         {
             int id;
@@ -55,11 +58,13 @@ namespace Task233
             nextId = 1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsCancellationRequested(Task233CancelSource source)
         {
             return IsValid(source) && (states[source.Id] & Canceled) != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Cancel(Task233CancelSource source)
         {
             if (IsValid(source))
@@ -68,6 +73,7 @@ namespace Task233
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dispose(Task233CancelSource source)
         {
             if (!IsValid(source))
@@ -81,6 +87,7 @@ namespace Task233
             free[freeCount++] = source.Id;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsValid(Task233CancelSource source)
         {
             return source.Id > 0 &&

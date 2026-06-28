@@ -140,7 +140,7 @@ Call `T233.Prewarm()` during startup to reserve continuation queue, delay-node, 
 
 Last README report update: 2026-06-28.
 
-The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 18 tests in 1.36 seconds.
+The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short and stable: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 18 tests in 22.13 seconds.
 
 Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
 
@@ -148,11 +148,11 @@ The measured Unity 2022.3.51f1 comparison table lives in [`性能报告.md`](性
 
 | Case | Task233 ns/op | Comparison ns/op | Result |
 | --- | ---: | ---: | --- |
-| `T233.Yield()` factory vs `UniTask.Yield()` | 1.249 | 1.254 | Task233 slightly faster |
-| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 11.769 | 214.967 | Task233 18.3x faster |
-| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 12.769 | 252.724 | Task233 19.8x faster |
-| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 12.141 | 258.307 | Task233 21.3x faster |
-| `Task233CancelSource` vs `CancellationTokenSource` | 36.517 | 138.634 | Task233 3.8x faster |
+| `T233.Yield()` factory vs `UniTask.Yield()` | 1.388 | 1.429 | Task233 1.03x faster |
+| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 6.939 | 224.720 | Task233 32.4x faster |
+| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 6.361 | 280.502 | Task233 44.1x faster |
+| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 6.427 | 304.094 | Task233 47.3x faster |
+| `Task233CancelSource` vs `CancellationTokenSource` | 20.064 | 167.943 | Task233 8.4x faster |
 
 Run the Editor preview allocation probe from `Tools > Task233 > Preview` for a quick local warmed-GC check. For authoritative speed results, run Unity Performance Testing in the target Unity version and hardware.
 
@@ -164,9 +164,15 @@ Open Unity Test Runner and run `Task233.PerformanceTests`, or run in batch mode:
 Unity.exe -batchmode -projectPath TestProject -runTests -testPlatform EditMode -testResults artifacts/editmode-results.xml
 ```
 
-The baseline suite runs Task233 internal measurements. To compare UniTask, install UniTask and run the optional `Task233.UniTaskPerformanceTests` assembly. The asmdef enables itself through Unity Version Defines when `com.cysharp.unitask` is present.
+The baseline suite runs Task233 internal measurements. To compare UniTask without a UPM git dependency, download the UniTask source package first:
 
-To install UniTask into the test project for comparison, add the UniTask package to `TestProject/Packages/manifest.json`, then rerun the performance tests. The optional assembly is gated so normal users do not need UniTask installed.
+```powershell
+powershell -ExecutionPolicy Bypass -File Tools/PrepareUniTaskPackage.ps1 -Version 2.5.11
+```
+
+`TestProject/Packages/manifest.json` points to `.perf/UniTask` with a `file:` dependency. The optional `Task233.UniTaskPerformanceTests` assembly enables itself through Unity Version Defines when `com.cysharp.unitask` is present.
+
+The optional assembly is gated so normal users do not need UniTask installed.
 
 ## Docs
 

@@ -24,10 +24,18 @@ Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates the benchmark 
 
 The first benchmark layer measures Task233 primitives directly. To compare against UniTask:
 
-1. Add UniTask to `TestProject/Packages/manifest.json`.
+1. Download UniTask into `.perf/UniTask`.
 2. Run the optional `Task233.UniTaskPerformanceTests` assembly.
 
 `Task233.UniTaskPerformanceTests.asmdef` uses Unity Version Defines and enables `TASK233_HAS_UNITASK` automatically when `com.cysharp.unitask` is present.
+
+Local download command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Tools/PrepareUniTaskPackage.ps1 -Version 2.5.11
+```
+
+The repository test project uses `file:../../.perf/UniTask`, so Unity imports downloaded source code instead of cloning the UniTask git repository.
 
 Keep each benchmark measuring the same operation:
 
@@ -40,8 +48,8 @@ The default short-run benchmark policy is:
 
 - `WarmupCount(0)`
 - `MeasurementCount(1)`
-- 1,000,000 iterations for awaitable factory paths
-- 100,000 iterations for cancellation create/cancel/dispose
+- 20,000,000 iterations for awaitable factory paths
+- 2,000,000 iterations for cancellation create/cancel/dispose
 - report total milliseconds, derived `ns/op`, derived `ops/s`, and GC median together
 
 Fast code that allocates on hot paths is still a regression for Unity gameplay loops.
