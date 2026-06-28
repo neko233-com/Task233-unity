@@ -1,18 +1,17 @@
-Library/
-Temp/
-Obj/
-Build/
-Builds/
-Logs/
-UserSettings/
-MemoryCaptures/
-.vs/
-.vscode/
-.idea/
-.cache/
-*.csproj
-*.sln
-*.user
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+Recordings/
+
+# Unity generated files
+sysinfo.txt
+*.stackdump
 *.pidb
 *.booproj
 *.svd
@@ -20,7 +19,36 @@ MemoryCaptures/
 *.mdb
 *.opendb
 *.VC.db
-sysinfo.txt
+
+# IDE and editor files
+.vs/
+.vscode/
+.idea/
+.fleet/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.tmp
+*.pid
+
+# Build artifacts
 *.apk
 *.aab
+*.app
+*.ipa
 *.unitypackage
+*.symbols.zip
+
+# UPM and local caches
+.cache/
+.upmconfig.toml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
