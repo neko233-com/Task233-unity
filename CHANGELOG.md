@@ -10,3 +10,5 @@
 - Added lightweight Task233 cancellation handles.
 - Added prewarm support for zero-GC warmed hot paths.
 - Added optional UniTask performance comparison tests.
+- Added Unity Editor preview tooling under `Editor/`.
+- Documented Package Manager install, offline `Assets/neko233/Task233` install, and README performance report format.

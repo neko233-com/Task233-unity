@@ -16,8 +16,8 @@ namespace Task233.Tests
 
             Measure.Method(() => T233.Post(NoopAction))
                 .WarmupCount(20)
-                .MeasurementCount(100)
-                .IterationsPerMeasurement(10000)
+                .MeasurementCount(1000)
+                .IterationsPerMeasurement(1)
                 .GC()
                 .Run();
         }

@@ -3,7 +3,7 @@
   "displayName": "Task233 Unity",
   "version": "0.1.0",
   "unity": "2022.3",
-  "description": "High-performance Unity async scheduling primitives with automated benchmark hooks against UniTask and ETTask.",
+  "description": "Zero-GC warmed hot-path Unity async scheduling primitives with Editor preview tooling and automated benchmark hooks.",
   "keywords": [
     "async",
     "task",

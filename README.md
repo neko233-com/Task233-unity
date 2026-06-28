@@ -4,9 +4,11 @@ Task233 Unity is a Unity 2022+ async scheduling package focused on zero-GC hot p
 
 It is designed to be benchmarked against UniTask and ETTask while staying useful as a standalone Unity Package Manager dependency.
 
-## Install
+## Install With Package Manager
 
-Use Unity Package Manager:
+Unity Package Manager is the recommended install path.
+
+Open `Window > Package Manager > + > Add package from git URL...` and enter:
 
 ```text
 https://github.com/neko233-com/Task233-unity.git
@@ -21,6 +23,25 @@ Or add it to `Packages/manifest.json`:
   }
 }
 ```
+
+## Offline Install
+
+For an offline Unity project, create this folder:
+
+```text
+Assets/neko233/Task233
+```
+
+Then copy these folders from this repository:
+
+```text
+Assets/neko233/Task233/Runtime
+Assets/neko233/Task233/Editor
+```
+
+Do not copy `TestProject/` into `Assets`. The test project is only for this repository's automation and benchmark development.
+
+`Runtime/` contains the player-safe scheduler and awaitables. `Editor/` contains only Unity Editor preview tooling and is excluded from player builds by the `Task233.Editor` asmdef.
 
 ## Unity
 
@@ -60,6 +81,21 @@ T233.Post(static () => Debug.Log("next Update"));
 
 Time units are explicit in the method names. `DelaySeconds` and `DelayMilliseconds` use scaled Unity time by default. Pass `ignoreTimeScale: true` for unscaled time.
 
+## Editor Preview
+
+Open:
+
+```text
+Tools > Task233 > Preview
+```
+
+The preview window can:
+
+- Prewarm queues, delay nodes, and cancellation handles.
+- Run an Editor allocation probe for warmed awaitable factory paths.
+- Run a Play Mode sequence through `Yield`, `DelayFrames`, `DelayMilliseconds`, `DelaySeconds`, and `Post`.
+- Cancel the Play Mode preview using `Task233CancelSource`.
+
 ## Cancellation
 
 Task233 has a lightweight cancellation handle so hot paths do not have to traffic in `CancellationToken`.
@@ -95,6 +131,24 @@ Call `cancel.Cancel()` from the owner that wants to stop the wait, such as `OnDi
 
 Call `T233.Prewarm()` during startup to reserve continuation queue, delay-node, and cancellation-source capacity. If a workload exceeds the warmed capacity, Task233 expands its arrays or node pool and that expansion can allocate.
 
+## Performance Test Report
+
+Last README report update: 2026-06-28.
+
+The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
+
+| Case | Benchmark | GC target after prewarm | Notes |
+| --- | --- | ---: | --- |
+| Continuation enqueue | `T233.Post(cachedAction)` | 0 B/op | Fastest path; use cached/static delegates. |
+| Yield factory | `T233.Yield()` | 0 B/op | Struct awaitable factory path. |
+| Frame wait factory | `T233.DelayFrames(1)` | 0 B/op | Explicit frame unit. |
+| Seconds wait factory | `T233.DelaySeconds(0.001d)` | 0 B/op | Scaled time by default. |
+| Milliseconds wait factory | `T233.DelayMilliseconds(1)` | 0 B/op | Explicit millisecond unit. |
+| Cancellation reuse | create/cancel/dispose `Task233CancelSource` | 0 B/op after prewarm | Single-threaded handle table. |
+| UniTask comparison | `UniTask.Yield()` / `UniTask.DelayFrame(1)` | measured by Unity Performance Testing | Enable `TASK233_HAS_UNITASK`. |
+
+Run the Editor preview allocation probe from `Tools > Task233 > Preview` for a quick local warmed-GC check. For authoritative speed results, run Unity Performance Testing in the target Unity version and hardware.
+
 ## Benchmarks
 
 Open Unity Test Runner and run `Task233.PerformanceTests`, or run in batch mode:
@@ -104,6 +158,8 @@ Unity.exe -batchmode -projectPath TestProject -runTests -testPlatform EditMode -
 ```
 
 The baseline suite runs Task233 internal measurements. To compare UniTask, install UniTask, add `TASK233_HAS_UNITASK` in Player Settings, and run the optional `Task233.UniTaskPerformanceTests` assembly.
+
+To install UniTask into the test project for comparison, add the UniTask package to `TestProject/Packages/manifest.json`, then rerun the performance tests. The optional assembly is gated so normal users do not need UniTask installed.
 
 ## Docs
 

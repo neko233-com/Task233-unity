@@ -35,6 +35,19 @@ Keep each benchmark measuring the same operation:
 
 Report GC allocations and median execution time together. Fast code that allocates on hot paths is still a regression for Unity gameplay loops.
 
+## README report
+
+When a numeric benchmark run is available, update the `Performance Test Report` table in `README.md` with:
+
+- Unity version
+- Scripting backend
+- Platform
+- Hardware or CI runner
+- Median time per operation
+- GC bytes per operation
+
+Do not compare numbers from different Unity versions or machines as if they are equivalent.
+
 ## Zero-GC target
 
 Use `T233.Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming, cancelSourceCapacity)` before hot gameplay begins. The warmed path is designed to avoid scheduler allocations for:
