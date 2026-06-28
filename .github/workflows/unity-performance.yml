@@ -11,6 +11,11 @@ jobs:
   performance:
     name: Unity 2022.3 EditMode Performance
     runs-on: ubuntu-latest
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,12 +28,14 @@ jobs:
           restore-keys: |
             Library-${{ runner.os }}-2022.3-
 
+      - name: Unity license notice
+        if: ${{ env.UNITY_LICENSE == '' && env.UNITY_SERIAL == '' }}
+        run: |
+          echo "::notice::Unity performance tests are configured but skipped because UNITY_LICENSE or UNITY_SERIAL is not set."
+
       - name: Run EditMode tests
+        if: ${{ env.UNITY_LICENSE != '' || env.UNITY_SERIAL != '' }}
         uses: game-ci/unity-test-runner@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: TestProject
           unityVersion: 2022.3.62f1
