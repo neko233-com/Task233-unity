@@ -137,6 +137,8 @@ Last README report update: 2026-06-28.
 
 The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
 
+The detailed comparison table lives in [`性能报告.md`](性能报告.md).
+
 | Case | Benchmark | GC target after prewarm | Notes |
 | --- | --- | ---: | --- |
 | Continuation enqueue | `T233.Post(cachedAction)` | 0 B/op | Fastest path; use cached/static delegates. |
