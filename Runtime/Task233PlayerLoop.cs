@@ -40,26 +40,31 @@ namespace Task233
 
         public static void Enqueue(PlayerLoopTiming timing, Action continuation)
         {
+            Initialize();
             Queues[(int)timing].Enqueue(continuation);
         }
 
         public static void Enqueue(PlayerLoopTiming timing, Action continuation, Task233CancelSource cancellation)
         {
+            Initialize();
             Queues[(int)timing].Enqueue(continuation, cancellation);
         }
 
         public static void Enqueue(PlayerLoopTiming timing, Action continuation, Task233CancelSource cancellation, bool skipIfCanceled)
         {
+            Initialize();
             Queues[(int)timing].Enqueue(continuation, cancellation, skipIfCanceled);
         }
 
         public static void EnqueueDelayFrame(PlayerLoopTiming timing, int frameCount, Action continuation, Task233CancelSource cancellation)
         {
+            Initialize();
             Queues[(int)timing].EnqueueDelayFrame(frameCount, continuation, cancellation);
         }
 
         public static void EnqueueDelaySeconds(PlayerLoopTiming timing, double seconds, bool ignoreTimeScale, Action continuation, Task233CancelSource cancellation)
         {
+            Initialize();
             Queues[(int)timing].EnqueueDelaySeconds(seconds, ignoreTimeScale, continuation, cancellation);
         }
 

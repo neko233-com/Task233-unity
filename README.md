@@ -49,6 +49,10 @@ Do not copy `TestProject/` into `Assets`. The test project is only for this repo
 - .NET Standard 2.1 compatible scripting runtime
 - Performance tests use `com.unity.test-framework.performance`
 
+## Compatibility
+
+Task233 Runtime is written for Unity 2022+ and avoids worker-thread requirements, unsafe code, dynamic code generation, and reflection emit. The Unity package uses PlayerLoop for scheduling, so it targets Unity platforms first, including WebGL single-thread builds. The lightweight cancellation handle and awaitable API shape are kept plain C# friendly so a traditional .NET scheduler can be split out without changing the high-level API style.
+
 ## Quick Start
 
 ```csharp
@@ -122,12 +126,13 @@ Call `cancel.Cancel()` from the owner that wants to stop the wait, such as `OnDi
 
 ## Performance Goals
 
-- Zero GC on warmed hot paths.
+- Zero GC hot paths for factory creation and pooled scheduling.
 - No coroutine object for frame or time waits.
 - Pooled scheduler nodes for frame, seconds, and milliseconds delays.
 - PlayerLoop injection once per domain reload.
-- Benchmarks that can run locally and in GitHub Actions.
+- Short benchmarks that can run locally and in GitHub Actions.
 - WebGL-friendly single-threaded design with no worker thread dependency.
+- Unity 2022+ platform-friendly runtime: no unsafe, no dynamic code generation, no worker thread requirement.
 
 Call `T233.Prewarm()` during startup to reserve continuation queue, delay-node, and cancellation-source capacity. If a workload exceeds the warmed capacity, Task233 expands its arrays or node pool and that expansion can allocate.
 
@@ -135,19 +140,19 @@ Call `T233.Prewarm()` during startup to reserve continuation queue, delay-node, 
 
 Last README report update: 2026-06-28.
 
-The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
+The repository contains Unity Performance Testing benchmarks for Task233 plus an optional UniTask comparison assembly. The current benchmark style is intentionally short: no warmup, one measurement, large iteration counts, then total elapsed time is converted to `ns/op` and `ops/s`. The latest local Unity 2022.3.51f1 run completed 18 tests in 1.36 seconds.
+
+Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
 
 The measured Unity 2022.3.51f1 comparison table lives in [`性能报告.md`](性能报告.md).
 
-| Case | Benchmark | GC target after prewarm | Notes |
-| --- | --- | ---: | --- |
-| Continuation enqueue | `T233.Post(cachedAction)` | 0 B/op | Fastest path; use cached/static delegates. |
-| Yield factory | `T233.Yield()` | 0 B/op | Struct awaitable factory path. |
-| Frame wait factory | `T233.DelayFrames(1)` | 0 B/op | Explicit frame unit. |
-| Seconds wait factory | `T233.DelaySeconds(0.001d)` | 0 B/op | Scaled time by default. |
-| Milliseconds wait factory | `T233.DelayMilliseconds(1)` | 0 B/op | Explicit millisecond unit. |
-| Cancellation reuse | create/cancel/dispose `Task233CancelSource` | 0 B/op after prewarm | Single-threaded handle table. |
-| UniTask comparison | `UniTask.Yield()` / `UniTask.DelayFrame(1)` | measured by Unity Performance Testing | Enable `TASK233_HAS_UNITASK`. |
+| Case | Task233 ns/op | Comparison ns/op | Result |
+| --- | ---: | ---: | --- |
+| `T233.Yield()` factory vs `UniTask.Yield()` | 1.249 | 1.254 | Task233 slightly faster |
+| `T233.DelayFrames(1)` factory vs `UniTask.DelayFrame(1)` | 11.769 | 214.967 | Task233 18.3x faster |
+| `T233.DelaySeconds(0.001d)` factory vs `UniTask.Delay(TimeSpan)` | 12.769 | 252.724 | Task233 19.8x faster |
+| `T233.DelayMilliseconds(1)` factory vs `UniTask.Delay(1)` | 12.141 | 258.307 | Task233 21.3x faster |
+| `Task233CancelSource` vs `CancellationTokenSource` | 36.517 | 138.634 | Task233 3.8x faster |
 
 Run the Editor preview allocation probe from `Tools > Task233 > Preview` for a quick local warmed-GC check. For authoritative speed results, run Unity Performance Testing in the target Unity version and hardware.
 
@@ -159,7 +164,7 @@ Open Unity Test Runner and run `Task233.PerformanceTests`, or run in batch mode:
 Unity.exe -batchmode -projectPath TestProject -runTests -testPlatform EditMode -testResults artifacts/editmode-results.xml
 ```
 
-The baseline suite runs Task233 internal measurements. To compare UniTask, install UniTask, add `TASK233_HAS_UNITASK` in Player Settings, and run the optional `Task233.UniTaskPerformanceTests` assembly.
+The baseline suite runs Task233 internal measurements. To compare UniTask, install UniTask and run the optional `Task233.UniTaskPerformanceTests` assembly. The asmdef enables itself through Unity Version Defines when `com.cysharp.unitask` is present.
 
 To install UniTask into the test project for comparison, add the UniTask package to `TestProject/Packages/manifest.json`, then rerun the performance tests. The optional assembly is gated so normal users do not need UniTask installed.
 

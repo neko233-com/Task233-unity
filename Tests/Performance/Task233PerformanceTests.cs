@@ -6,17 +6,18 @@ namespace Task233.Tests
 {
     public sealed class Task233PerformanceTests
     {
+        private const int PostIterations = 128;
+        private const int FactoryIterations = 1000000;
+        private const int CancellationIterations = 100000;
         private static readonly Action NoopAction = Noop;
 
         [Test, Performance]
         public void PostContinuation()
         {
-            T233.Prewarm(16384, 16384);
-
             Measure.Method(() => T233.Post(NoopAction))
-                .WarmupCount(20)
-                .MeasurementCount(1000)
-                .IterationsPerMeasurement(1)
+                .WarmupCount(0)
+                .MeasurementCount(1)
+                .IterationsPerMeasurement(PostIterations)
                 .GC()
                 .Run();
         }
@@ -25,9 +26,9 @@ namespace Task233.Tests
         public void ScheduleYieldAwaitable()
         {
             Measure.Method(() => _ = T233.Yield())
-                .WarmupCount(20)
-                .MeasurementCount(100)
-                .IterationsPerMeasurement(10000)
+                .WarmupCount(0)
+                .MeasurementCount(1)
+                .IterationsPerMeasurement(FactoryIterations)
                 .GC()
                 .Run();
         }
@@ -36,9 +37,9 @@ namespace Task233.Tests
         public void ScheduleDelayFrameAwaitable()
         {
             Measure.Method(() => _ = T233.DelayFrames(1))
-                .WarmupCount(20)
-                .MeasurementCount(100)
-                .IterationsPerMeasurement(10000)
+                .WarmupCount(0)
+                .MeasurementCount(1)
+                .IterationsPerMeasurement(FactoryIterations)
                 .GC()
                 .Run();
         }
@@ -47,9 +48,9 @@ namespace Task233.Tests
         public void ScheduleDelaySecondsAwaitable()
         {
             Measure.Method(() => _ = T233.DelaySeconds(0.001d))
-                .WarmupCount(20)
-                .MeasurementCount(100)
-                .IterationsPerMeasurement(10000)
+                .WarmupCount(0)
+                .MeasurementCount(1)
+                .IterationsPerMeasurement(FactoryIterations)
                 .GC()
                 .Run();
         }
@@ -58,9 +59,9 @@ namespace Task233.Tests
         public void ScheduleDelayMillisecondsAwaitable()
         {
             Measure.Method(() => _ = T233.DelayMilliseconds(1))
-                .WarmupCount(20)
-                .MeasurementCount(100)
-                .IterationsPerMeasurement(10000)
+                .WarmupCount(0)
+                .MeasurementCount(1)
+                .IterationsPerMeasurement(FactoryIterations)
                 .GC()
                 .Run();
         }
@@ -74,9 +75,9 @@ namespace Task233.Tests
                     cancel.Cancel();
                     cancel.Dispose();
                 })
-                .WarmupCount(20)
-                .MeasurementCount(100)
-                .IterationsPerMeasurement(10000)
+                .WarmupCount(0)
+                .MeasurementCount(1)
+                .IterationsPerMeasurement(CancellationIterations)
                 .GC()
                 .Run();
         }

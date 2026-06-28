@@ -44,15 +44,18 @@ namespace Task233
             Task233PlayerLoop.Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming);
         }
 
+        public static YieldAwaitable Yield()
+        {
+            return default;
+        }
+
         public static YieldAwaitable Yield(PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
-            Task233PlayerLoop.Initialize();
             return new YieldAwaitable(timing, cancellation);
         }
 
         public static void Post(Action continuation, PlayerLoopTiming timing = PlayerLoopTiming.Update, Task233CancelSource cancellation = default)
         {
-            Task233PlayerLoop.Initialize();
             Task233PlayerLoop.Enqueue(timing, continuation, cancellation, true);
         }
 
@@ -68,7 +71,6 @@ namespace Task233
                 throw new ArgumentOutOfRangeException(nameof(frameCount));
             }
 
-            Task233PlayerLoop.Initialize();
             return DelayAwaitable.Frames(frameCount, timing, cancellation);
         }
 
@@ -79,7 +81,6 @@ namespace Task233
                 throw new ArgumentOutOfRangeException(nameof(seconds));
             }
 
-            Task233PlayerLoop.Initialize();
             return DelayAwaitable.Seconds(seconds, ignoreTimeScale, timing, cancellation);
         }
 
@@ -90,23 +91,23 @@ namespace Task233
                 throw new ArgumentOutOfRangeException(nameof(milliseconds));
             }
 
-            Task233PlayerLoop.Initialize();
             return DelayAwaitable.Seconds(milliseconds / 1000d, ignoreTimeScale, timing, cancellation);
         }
 
         public readonly struct YieldAwaitable
         {
-            private readonly PlayerLoopTiming timing;
+            private readonly int timingValuePlusOne;
             private readonly Task233CancelSource cancellation;
 
             internal YieldAwaitable(PlayerLoopTiming timing, Task233CancelSource cancellation)
             {
-                this.timing = timing;
+                timingValuePlusOne = (int)timing + 1;
                 this.cancellation = cancellation;
             }
 
             public Awaiter GetAwaiter()
             {
+                var timing = timingValuePlusOne == 0 ? PlayerLoopTiming.Update : (PlayerLoopTiming)(timingValuePlusOne - 1);
                 return new Awaiter(timing, cancellation);
             }
 

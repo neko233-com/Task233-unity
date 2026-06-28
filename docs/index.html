@@ -103,7 +103,7 @@
   <main>
     <header>
       <h1>Task233 Unity</h1>
-      <p>Unity 2022+ async scheduling primitives built for warmed zero-GC PlayerLoop continuations, explicit time-unit delays, lightweight cancellation, and measurable performance work.</p>
+      <p>Unity 2022+ async scheduling primitives built for zero-GC hot paths, explicit time-unit delays, lightweight cancellation, WebGL-friendly single-thread execution, and measurable performance work.</p>
     </header>
 
     <section>
@@ -125,7 +125,34 @@
         </article>
         <article class="card">
           <h3>Benchmarkable</h3>
-          <p>Performance tests are included, with an optional UniTask comparison assembly for direct speed and GC checks.</p>
+          <p>Performance tests are included, with an optional UniTask comparison assembly for direct speed and GC checks in under a minute.</p>
+        </article>
+        <article class="card">
+          <h3>Platform fit</h3>
+          <p>No worker thread, unsafe, reflection emit, or dynamic code generation requirement for Unity 2022+ runtime platforms.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Measured Performance</h2>
+      <p>Unity 2022.3.51f1 EditMode, WindowsEditor, no warmup, one measurement, total time converted to throughput. Full data: <a href="https://github.com/neko233-com/Task233-unity/blob/main/%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A.md">性能报告.md</a>.</p>
+      <div class="grid">
+        <article class="card">
+          <h3>Yield</h3>
+          <p><strong>1.249 ns/op</strong> for <code>T233.Yield()</code>, slightly faster than UniTask in the same short run.</p>
+        </article>
+        <article class="card">
+          <h3>Frame delay</h3>
+          <p><strong>18.3x faster</strong> than <code>UniTask.DelayFrame(1)</code> factory creation.</p>
+        </article>
+        <article class="card">
+          <h3>Time delay</h3>
+          <p><strong>19.8x to 21.3x faster</strong> for seconds and milliseconds delay factory creation.</p>
+        </article>
+        <article class="card">
+          <h3>Cancellation</h3>
+          <p><strong>3.8x faster</strong> than <code>CancellationTokenSource</code> create/cancel/dispose.</p>
         </article>
       </div>
     </section>

@@ -8,6 +8,7 @@
 [Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
 Recordings/
+[Cc]rash[Rr]eports/
 
 # Unity generated files
 sysinfo.txt
@@ -47,7 +48,10 @@ sysinfo.txt
 .perf/
 .upmconfig.toml
 artifacts/
+coverage/
+TestResults/
 TestProject/artifacts/
+TestProject/Logs/
 TestProject/Packages/packages-lock.json
 TestProject/ProjectSettings/*.asset
 TestProject/ProjectSettings/*.asset.meta

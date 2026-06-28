@@ -1,6 +1,6 @@
 # Benchmarking Task233
 
-Task233 ships with a minimal benchmark suite under `Tests/Performance`.
+Task233 ships with a short benchmark suite under `Tests/Performance`.
 
 ## Local
 
@@ -12,19 +12,22 @@ Unity.exe -batchmode -projectPath TestProject -runTests -testPlatform EditMode -
 
 ## GitHub Actions
 
-`.github/workflows/unity-performance.yml` runs the same tests through GameCI. Add these repository secrets before expecting CI to pass:
+`.github/workflows/unity-performance.yml` creates an isolated Unity project and runs the same tests through GameCI. Add these repository secrets before expecting real Unity Editor benchmarks in CI:
 
 - `UNITY_LICENSE`
 - `UNITY_EMAIL`
 - `UNITY_PASSWORD`
+
+Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates the benchmark project setup and skips the Unity invocation.
 
 ## UniTask comparison
 
 The first benchmark layer measures Task233 primitives directly. To compare against UniTask:
 
 1. Add UniTask to `TestProject/Packages/manifest.json`.
-2. Add `TASK233_HAS_UNITASK` to the Unity scripting define symbols.
-3. Run the optional `Task233.UniTaskPerformanceTests` assembly.
+2. Run the optional `Task233.UniTaskPerformanceTests` assembly.
+
+`Task233.UniTaskPerformanceTests.asmdef` uses Unity Version Defines and enables `TASK233_HAS_UNITASK` automatically when `com.cysharp.unitask` is present.
 
 Keep each benchmark measuring the same operation:
 
@@ -33,7 +36,15 @@ Keep each benchmark measuring the same operation:
 - complete one frame delay
 - run a large continuation batch
 
-Report GC allocations and median execution time together. Fast code that allocates on hot paths is still a regression for Unity gameplay loops.
+The default short-run benchmark policy is:
+
+- `WarmupCount(0)`
+- `MeasurementCount(1)`
+- 1,000,000 iterations for awaitable factory paths
+- 100,000 iterations for cancellation create/cancel/dispose
+- report total milliseconds, derived `ns/op`, derived `ops/s`, and GC median together
+
+Fast code that allocates on hot paths is still a regression for Unity gameplay loops.
 
 ## README report
 
@@ -50,7 +61,7 @@ Do not compare numbers from different Unity versions or machines as if they are 
 
 ## Zero-GC target
 
-Use `T233.Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming, cancelSourceCapacity)` before hot gameplay begins. The warmed path is designed to avoid scheduler allocations for:
+The factory hot paths are designed to allocate zero GC without a user warmup call. For queued work, use `T233.Prewarm(continuationCapacityPerTiming, delayNodeCapacityPerTiming, cancelSourceCapacity)` before hot gameplay begins if you know the expected queue and delay-node capacity. The warmed scheduling path is designed to avoid scheduler allocations for:
 
 - `T233.Post` with cached or static delegates
 - `T233.Yield`
