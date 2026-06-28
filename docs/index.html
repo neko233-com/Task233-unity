@@ -190,6 +190,195 @@
           <p><strong>9.1x faster</strong> than <code>CancellationTokenSource</code> create/cancel/dispose.</p>
         </article>
       </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Measured path</th>
+              <th>Task233</th>
+              <th>UniTask / .NET baseline</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Yield()</code> factory</td>
+              <td>1.189 ns/op</td>
+              <td>1.228 ns/op</td>
+              <td>Task233 1.03x faster</td>
+            </tr>
+            <tr>
+              <td><code>DelayFrames(1)</code> factory</td>
+              <td>6.380 ns/op</td>
+              <td>221.354 ns/op</td>
+              <td>Task233 34.7x faster</td>
+            </tr>
+            <tr>
+              <td><code>DelaySeconds(0.001)</code> factory</td>
+              <td>6.289 ns/op</td>
+              <td>292.718 ns/op</td>
+              <td>Task233 46.5x faster</td>
+            </tr>
+            <tr>
+              <td><code>DelayMilliseconds(1)</code> factory</td>
+              <td>6.283 ns/op</td>
+              <td>356.741 ns/op</td>
+              <td>Task233 56.8x faster</td>
+            </tr>
+            <tr>
+              <td>cancel source create/cancel/dispose</td>
+              <td>17.293 ns/op</td>
+              <td>157.246 ns/op</td>
+              <td>Task233 9.1x faster than <code>CancellationTokenSource</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Full Comparison</h2>
+      <p>Task233 is intentionally narrower than UniTask. The table separates measured hot paths from broader ecosystem features so the comparison is honest: Task233 is faster where it does less work; UniTask still covers many higher-level APIs that Task233 has not targeted yet.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Task233</th>
+              <th>UniTask 2.5.11</th>
+              <th>Current status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Default yield</td>
+              <td><code>T233.Yield()</code>, minimal struct awaitable</td>
+              <td><code>UniTask.Yield()</code></td>
+              <td>Measured: Task233 faster</td>
+            </tr>
+            <tr>
+              <td>Timing-specific yield</td>
+              <td><code>T233.Yield(PlayerLoopTiming)</code></td>
+              <td><code>UniTask.Yield(PlayerLoopTiming)</code></td>
+              <td>Both supported</td>
+            </tr>
+            <tr>
+              <td>Frame waits</td>
+              <td><code>DelayFrames(n)</code></td>
+              <td><code>DelayFrame(n)</code>, <code>NextFrame()</code></td>
+              <td>Measured factory path: Task233 faster</td>
+            </tr>
+            <tr>
+              <td>Time waits</td>
+              <td><code>DelaySeconds</code>, <code>DelayMilliseconds</code></td>
+              <td><code>Delay(int)</code>, <code>Delay(TimeSpan)</code>, <code>WaitForSeconds</code></td>
+              <td>Measured factory path: Task233 faster</td>
+            </tr>
+            <tr>
+              <td>Scaled / unscaled time</td>
+              <td><code>ignoreTimeScale</code> flag</td>
+              <td><code>ignoreTimeScale</code> and delay types</td>
+              <td>Both supported; UniTask has more variants</td>
+            </tr>
+            <tr>
+              <td>Fixed update</td>
+              <td><code>PlayerLoopTiming.FixedUpdate</code></td>
+              <td><code>WaitForFixedUpdate</code> and timing overloads</td>
+              <td>Both supported</td>
+            </tr>
+            <tr>
+              <td>End of frame</td>
+              <td><code>PostLateUpdate</code> style scheduling</td>
+              <td>Dedicated <code>WaitForEndOfFrame</code> APIs</td>
+              <td>UniTask broader here</td>
+            </tr>
+            <tr>
+              <td>Main-thread post</td>
+              <td>Public <code>T233.Post(Action)</code></td>
+              <td>PlayerLoop continuation helpers and internal scheduling</td>
+              <td>Task233 exposes the small primitive directly</td>
+            </tr>
+            <tr>
+              <td>Cancellation</td>
+              <td>Struct handle with compact table and retain/release</td>
+              <td><code>CancellationToken</code> / <code>CancellationTokenSource</code></td>
+              <td>Measured create/cancel/dispose: Task233 faster</td>
+            </tr>
+            <tr>
+              <td>Cancel then dispose</td>
+              <td>Safe while awaited work is still pending</td>
+              <td>Standard .NET token-source semantics</td>
+              <td>Both usable; Task233 covered by runtime tests</td>
+            </tr>
+            <tr>
+              <td>Owner lifetime cancel</td>
+              <td>Manual owner-scoped <code>Task233CancelSource</code></td>
+              <td><code>GetCancellationTokenOnDestroy</code> helpers</td>
+              <td>UniTask broader convenience API</td>
+            </tr>
+            <tr>
+              <td>Debounce / timeout</td>
+              <td>Built from delay plus cancel source</td>
+              <td>Built-in timeout helpers and token patterns</td>
+              <td>Task233 low-level path tested; UniTask richer API</td>
+            </tr>
+            <tr>
+              <td>WhenAll / WhenAny</td>
+              <td>Not provided yet</td>
+              <td>Provided</td>
+              <td>UniTask broader</td>
+            </tr>
+            <tr>
+              <td>Fire-and-forget</td>
+              <td>No dedicated <code>Forget</code> helper yet</td>
+              <td><code>Forget()</code></td>
+              <td>UniTask broader</td>
+            </tr>
+            <tr>
+              <td>Async LINQ</td>
+              <td>Not a current goal</td>
+              <td>Large <code>IUniTaskAsyncEnumerable</code> LINQ surface</td>
+              <td>UniTask much broader</td>
+            </tr>
+            <tr>
+              <td>Unity UI / triggers</td>
+              <td>Not provided yet</td>
+              <td>MonoBehaviour, UI, TextMeshPro async extensions</td>
+              <td>UniTask broader</td>
+            </tr>
+            <tr>
+              <td>Coroutine bridge</td>
+              <td>Not provided yet</td>
+              <td><code>ToCoroutine</code></td>
+              <td>UniTask broader</td>
+            </tr>
+            <tr>
+              <td>ThreadPool work</td>
+              <td>No worker-thread dependency</td>
+              <td><code>RunOnThreadPool</code> APIs</td>
+              <td>Task233 simpler for WebGL; UniTask broader off-main-thread</td>
+            </tr>
+            <tr>
+              <td>WebGL single-thread</td>
+              <td>Designed around Unity main thread only</td>
+              <td>Usable, but thread APIs are platform-limited</td>
+              <td>Task233 has a narrower platform surface</td>
+            </tr>
+            <tr>
+              <td>Editor preview</td>
+              <td><code>Tools &gt; Task233 &gt; Preview</code></td>
+              <td>No equivalent in this repo</td>
+              <td>Task233 includes package-specific preview tooling</td>
+            </tr>
+            <tr>
+              <td>Automated report</td>
+              <td>Unity Performance Testing plus GitHub Pages report</td>
+              <td>UniTask has its own mature docs and tests</td>
+              <td>Task233 repo includes current measured comparison</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section>

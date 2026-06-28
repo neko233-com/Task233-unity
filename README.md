@@ -145,6 +145,7 @@ The repository contains Unity Performance Testing benchmarks for Task233 plus an
 Numeric CI results require a Unity license secret. Without `UNITY_LICENSE` or `UNITY_SERIAL`, the workflow validates configuration and skips the Unity editor invocation.
 
 The measured Unity 2022.3.51f1 comparison table lives in [`性能报告.md`](性能报告.md).
+That report now includes a full comparison matrix covering measured hot paths, API coverage, cancellation semantics, business patterns, platform constraints, and areas where UniTask is still broader.
 
 | Case | Task233 ns/op | Comparison ns/op | Result |
 | --- | ---: | ---: | --- |
