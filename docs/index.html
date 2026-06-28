@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task233 Unity</title>
+  <meta name="description" content="High-performance Unity async scheduling primitives for Unity 2022+.">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8fa;
+      --fg: #15181e;
+      --muted: #5d6675;
+      --line: #d8dde6;
+      --accent: #176b87;
+      --code: #eef2f6;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --fg: #edf1f7;
+        --muted: #aab3c2;
+        --line: #28303b;
+        --accent: #6ac2d8;
+        --code: #1a2029;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 80px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 32px;
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 6vw, 4.4rem);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 38px;
+      font-size: 1.35rem;
+    }
+
+    p, li { color: var(--muted); }
+    strong { color: var(--fg); }
+    a { color: var(--accent); }
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: .94em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: color-mix(in srgb, var(--bg), var(--fg) 3%);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .card p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Task233 Unity</h1>
+      <p>Unity 2022+ async scheduling primitives built for low overhead PlayerLoop continuations and measurable performance work.</p>
+    </header>
+
+    <section>
+      <h2>Install</h2>
+      <pre><code>https://github.com/neko233-com/Task233-unity.git</code></pre>
+    </section>
+
+    <section>
+      <h2>Why</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Low overhead</h3>
+          <p>Struct awaitables and pooled scheduler nodes avoid coroutine allocations for common frame waits.</p>
+        </article>
+        <article class="card">
+          <h3>Unity native</h3>
+          <p>PlayerLoop integration runs on Unity's main thread without requiring a scene object.</p>
+        </article>
+        <article class="card">
+          <h3>Benchmarkable</h3>
+          <p>Performance tests are included and can be extended to compare UniTask and ETTask in the same project.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Quick Start</h2>
+      <pre><code>using Task233;
+using UnityEngine;
+
+public sealed class Example : MonoBehaviour
+{
+    private async void Start()
+    {
+        await T233.Yield();
+        await T233.DelayFrame(3);
+        Debug.Log("continued on Unity main thread");
+    }
+}</code></pre>
+    </section>
+
+    <section>
+      <h2>Automation</h2>
+      <p>GitHub Actions runs Unity tests through GameCI and publishes this HTML documentation through GitHub Pages.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "com.neko233.task233": "file:../",
+    "com.unity.test-framework": "1.1.33",
+    "com.unity.test-framework.performance": "3.0.3"
+  }
+}

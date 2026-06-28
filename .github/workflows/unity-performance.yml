@@ -1,0 +1,43 @@
+name: Unity Performance Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  performance:
+    name: Unity 2022.3 EditMode Performance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: TestProject/Library
+          key: Library-${{ runner.os }}-2022.3-${{ hashFiles('package.json', 'Runtime/**', 'Tests/**') }}
+          restore-keys: |
+            Library-${{ runner.os }}-2022.3-
+
+      - name: Run EditMode tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: TestProject
+          unityVersion: 2022.3.62f1
+          testMode: EditMode
+          customParameters: -testResults artifacts/editmode-results.xml
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-performance-results
+          path: artifacts

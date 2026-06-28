@@ -1,0 +1,22 @@
+{
+  "name": "com.neko233.task233",
+  "displayName": "Task233 Unity",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "High-performance Unity async scheduling primitives with automated benchmark hooks against UniTask and ETTask.",
+  "keywords": [
+    "async",
+    "task",
+    "performance",
+    "playerloop",
+    "unitask",
+    "ettask"
+  ],
+  "author": {
+    "name": "neko233-com"
+  },
+  "dependencies": {},
+  "testables": [
+    "com.neko233.task233"
+  ]
+}
