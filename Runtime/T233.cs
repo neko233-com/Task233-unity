@@ -224,7 +224,7 @@ namespace Task233
             }
         }
 
-        private enum DelayKind
+        internal enum DelayKind
         {
             Frames,
             Seconds

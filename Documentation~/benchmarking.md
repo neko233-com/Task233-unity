@@ -4,7 +4,7 @@ Task233 ships with a minimal benchmark suite under `Tests/Performance`.
 
 ## Local
 
-Run the `Task233.PerformanceTests` assembly in the Unity Test Runner, or use batch mode from a Unity 2022.3 editor:
+Run the `Task233.PerformanceTests` assembly in the Unity Test Runner, or use batch mode from Unity 2022.3.51f1:
 
 ```powershell
 Unity.exe -batchmode -projectPath TestProject -runTests -testPlatform EditMode -testResults artifacts/editmode-results.xml

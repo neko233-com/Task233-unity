@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "com.neko233.task233": "file:../",
+    "com.neko233.task233": "file:../../",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask#2.5.11",
     "com.unity.test-framework": "1.1.33",
     "com.unity.test-framework.performance": "3.0.3"
   }

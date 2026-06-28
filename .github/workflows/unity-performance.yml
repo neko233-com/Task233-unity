@@ -20,13 +20,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create isolated performance project
+        shell: bash
+        run: |
+          rm -rf .perf
+          mkdir -p .perf/Task233Package .perf/TestProject/Assets .perf/TestProject/Packages .perf/TestProject/ProjectSettings
+          cp -R Runtime Editor Tests Documentation~ package.json README.md LICENSE CHANGELOG.md .perf/Task233Package/
+          cat > .perf/TestProject/Packages/manifest.json <<'JSON'
+          {
+            "dependencies": {
+              "com.neko233.task233": "file:../../Task233Package",
+              "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask#2.5.11",
+              "com.unity.test-framework": "1.1.33",
+              "com.unity.test-framework.performance": "3.0.3"
+            }
+          }
+          JSON
+          cat > .perf/TestProject/ProjectSettings/ProjectVersion.txt <<'TXT'
+          m_EditorVersion: 2022.3.51f1
+          m_EditorVersionWithRevision: 2022.3.51f1
+          TXT
+
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
-          path: TestProject/Library
-          key: Library-${{ runner.os }}-2022.3-${{ hashFiles('package.json', 'Runtime/**', 'Tests/**') }}
+          path: .perf/TestProject/Library
+          key: Library-${{ runner.os }}-2022.3.51f1-${{ hashFiles('package.json', 'Runtime/**', 'Tests/**') }}
           restore-keys: |
-            Library-${{ runner.os }}-2022.3-
+            Library-${{ runner.os }}-2022.3.51f1-
 
       - name: Unity license notice
         if: ${{ env.UNITY_LICENSE == '' && env.UNITY_SERIAL == '' }}
@@ -37,8 +58,8 @@ jobs:
         if: ${{ env.UNITY_LICENSE != '' || env.UNITY_SERIAL != '' }}
         uses: game-ci/unity-test-runner@v4
         with:
-          projectPath: TestProject
-          unityVersion: 2022.3.62f1
+          projectPath: .perf/TestProject
+          unityVersion: 2022.3.51f1
           testMode: EditMode
           customParameters: -testResults artifacts/editmode-results.xml
 

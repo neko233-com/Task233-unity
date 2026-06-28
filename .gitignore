@@ -17,6 +17,7 @@ sysinfo.txt
 *.svd
 *.pdb
 *.mdb
+*.meta
 *.opendb
 *.VC.db
 
@@ -43,7 +44,13 @@ sysinfo.txt
 
 # UPM and local caches
 .cache/
+.perf/
 .upmconfig.toml
+artifacts/
+TestProject/artifacts/
+TestProject/Packages/packages-lock.json
+TestProject/ProjectSettings/*.asset
+TestProject/ProjectSettings/*.asset.meta
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

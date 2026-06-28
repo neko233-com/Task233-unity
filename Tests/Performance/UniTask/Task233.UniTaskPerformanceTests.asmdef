@@ -14,9 +14,13 @@
   "overrideReferences": false,
   "precompiledReferences": [],
   "autoReferenced": false,
-  "defineConstraints": [
-    "TASK233_HAS_UNITASK"
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.cysharp.unitask",
+      "expression": "0.0.0",
+      "define": "TASK233_HAS_UNITASK"
+    }
   ],
-  "versionDefines": [],
   "noEngineReferences": false
 }

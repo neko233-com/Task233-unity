@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
 
@@ -83,10 +82,11 @@ namespace Task233.Tests
         }
 
         [Test]
-        public async Task DelayFrameZeroCompletesSynchronously()
+        public void DelayFrameZeroCompletesSynchronously()
         {
-            await T233.DelayFrames(0);
-            Assert.Pass();
+            var awaiter = T233.DelayFrames(0).GetAwaiter();
+            Assert.IsTrue(awaiter.IsCompleted);
+            awaiter.GetResult();
         }
 
         [Test]
@@ -95,8 +95,21 @@ namespace Task233.Tests
             var cancel = T233.CreateCancelSource();
             cancel.Cancel();
 
-            Assert.ThrowsAsync<OperationCanceledException>(async () => await T233.DelayFrames(1, cancellation: cancel));
-            cancel.Dispose();
+            try
+            {
+                var awaiter = T233.DelayFrames(1, cancellation: cancel).GetAwaiter();
+                Assert.IsTrue(awaiter.IsCompleted);
+                awaiter.GetResult();
+                Assert.Fail("Expected OperationCanceledException.");
+            }
+            catch (OperationCanceledException)
+            {
+                Assert.Pass();
+            }
+            finally
+            {
+                cancel.Dispose();
+            }
         }
 
         private static void Noop()
